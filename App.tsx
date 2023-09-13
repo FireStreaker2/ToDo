@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, useFocusEffect } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
@@ -22,14 +22,15 @@ interface Todos {
 let todos: Todos[] = [
 	{
 		title: "Create a new TODO",
-		description: 'Press the "Create New TODO" Button!',
+		description:
+			'Press the "Create New TODO" Button! If you would like to delete a ToDo, press the "X" in the top right!',
 	},
 ];
 
 const saveTodos = async () => {
 	try {
 		await AsyncStorage.setItem("todos", JSON.stringify(todos));
-	} catch (error) {
+	} catch (error: any) {
 		alert("An error occurred while saving your data.");
 		console.error(error);
 	}
@@ -41,7 +42,7 @@ const retrieveTodos = async () => {
 		if (storedTodos) {
 			todos = JSON.parse(storedTodos);
 		}
-	} catch (error) {
+	} catch (error: any) {
 		alert("An error occurred while fetching your data.");
 		console.error(error);
 	}
@@ -67,11 +68,38 @@ const HomeScreen: React.FC<NavigationProps> = ({ navigation }) => {
 const ToDosScreen: React.FC<NavigationProps> = ({ navigation }) => {
 	const [value, rerender] = useState(0);
 
+	useFocusEffect(() => {
+		(async () => {
+			try {
+				const refresh = await AsyncStorage.getItem("refresh");
+				if (refresh === "true") {
+					rerender(value + 1);
+					await AsyncStorage.setItem("refresh", "false");
+				}
+			} catch (error: any) {
+				alert("An error occurred.");
+			}
+		})();
+	});
+
 	const deleteToDo = (index: number) => {
 		const updatedTodos = todos.filter((_, i) => i !== index);
 		todos = updatedTodos;
 		saveTodos();
 		rerender(value + 1);
+	};
+
+	const clearToDos = () => {
+		if (todos.length === 0) {
+			alert("Nothing to clear");
+			return;
+		}
+
+		if (confirm("Are you sure?") === true) {
+			todos = [];
+			saveTodos();
+			rerender(value + 1);
+		}
 	};
 
 	retrieveTodos();
@@ -102,6 +130,9 @@ const ToDosScreen: React.FC<NavigationProps> = ({ navigation }) => {
 				title="Create New TODO"
 				onPress={() => navigation.navigate("CreateToDo")}
 			/>
+			<TouchableOpacity onPress={clearToDos}>
+				<Text style={styles.clearAll}>Clear All</Text>
+			</TouchableOpacity>
 		</View>
 	);
 };
@@ -125,15 +156,23 @@ const CreateToDoScreen: React.FC<NavigationProps> = ({ navigation }) => {
 		}
 
 		todos.push({
-			title: title,
+			title: title !== "" ? title : "No Title Provided",
 			description:
 				description !== "" ? description : "No description provided.",
 		});
 
 		saveTodos();
 
+		(async () => {
+			try {
+				await AsyncStorage.setItem("refresh", "true");
+			} catch (error) {
+				alert("An error occurred.");
+			}
+		})();
+
 		alert("Succesfully Submitted!");
-		navigation.navigate("Home");
+		navigation.navigate("ToDos");
 	};
 
 	return (
@@ -223,6 +262,11 @@ const styles = StyleSheet.create({
 
 	rerender: {
 		display: "none",
+	},
+
+	clearAll: {
+		color: "#ff0000",
+		marginTop: 15,
 	},
 });
 
