@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
@@ -13,18 +14,46 @@ import {
 
 const Stack = createStackNavigator();
 
-let todos = [
+interface Todos {
+	title: string;
+	description: string;
+}
+
+let todos: Todos[] = [
 	{
 		title: "Create a new TODO",
 		description: 'Press the "Create New TODO" Button!',
 	},
 ];
 
+const saveTodos = async () => {
+	try {
+		await AsyncStorage.setItem("todos", JSON.stringify(todos));
+	} catch (error) {
+		alert("An error occurred while saving your data.");
+		console.error(error);
+	}
+};
+
+const retrieveTodos = async () => {
+	try {
+		const storedTodos = await AsyncStorage.getItem("todos");
+		if (storedTodos) {
+			todos = JSON.parse(storedTodos);
+		}
+	} catch (error) {
+		alert("An error occurred while fetching your data.");
+		console.error(error);
+	}
+};
+
 interface NavigationProps {
 	navigation: any;
 }
 
 const HomeScreen: React.FC<NavigationProps> = ({ navigation }) => {
+	retrieveTodos();
+
 	return (
 		<View style={styles.container}>
 			<Text style={styles.h1}>ToDo</Text>
@@ -41,8 +70,11 @@ const ToDosScreen: React.FC<NavigationProps> = ({ navigation }) => {
 	const deleteToDo = (index: number) => {
 		const updatedTodos = todos.filter((_, i) => i !== index);
 		todos = updatedTodos;
+		saveTodos();
 		rerender(value + 1);
 	};
+
+	retrieveTodos();
 
 	return (
 		<View style={styles.container}>
@@ -51,7 +83,7 @@ const ToDosScreen: React.FC<NavigationProps> = ({ navigation }) => {
 				<Text style={styles.h1}>No ToDos Found.</Text>
 			) : (
 				<>
-					{todos.map((item, index) => (
+					{todos.map((item: Todos, index: number) => (
 						<View key={index} style={styles.todo}>
 							<Text style={styles.count}>{index + 1}.</Text>
 							<Text style={styles.h1}>{item.title}</Text>
@@ -97,6 +129,8 @@ const CreateToDoScreen: React.FC<NavigationProps> = ({ navigation }) => {
 			description:
 				description !== "" ? description : "No description provided.",
 		});
+
+		saveTodos();
 
 		alert("Succesfully Submitted!");
 		navigation.navigate("Home");
