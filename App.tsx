@@ -67,6 +67,7 @@ const HomeScreen: React.FC<NavigationProps> = ({ navigation }) => {
 
 const ToDosScreen: React.FC<NavigationProps> = ({ navigation }) => {
 	const [value, rerender] = useState(0);
+	const [showConfirmation, setShowConfirmation] = useState(false);
 
 	useFocusEffect(() => {
 		(async () => {
@@ -91,15 +92,14 @@ const ToDosScreen: React.FC<NavigationProps> = ({ navigation }) => {
 
 	const clearToDos = () => {
 		if (todos.length === 0) {
-			alert("Nothing to clear");
+			alert("Nothing to clear.");
+			setShowConfirmation(false);
 			return;
 		}
 
-		if (confirm("Are you sure?") === true) {
-			todos = [];
-			saveTodos();
-			rerender(value + 1);
-		}
+		todos = [];
+		saveTodos();
+		setShowConfirmation(false);
 	};
 
 	retrieveTodos();
@@ -130,9 +130,33 @@ const ToDosScreen: React.FC<NavigationProps> = ({ navigation }) => {
 				title="Create New TODO"
 				onPress={() => navigation.navigate("CreateToDo")}
 			/>
-			<TouchableOpacity onPress={clearToDos}>
+			<TouchableOpacity onPress={() => setShowConfirmation(true)}>
 				<Text style={styles.clearAll}>Clear All</Text>
 			</TouchableOpacity>
+
+			{showConfirmation && (
+				<View style={styles.confirmationContainer}>
+					<Text style={styles.h1}>Are You Sure?</Text>
+					<Text style={styles.p}>
+						This will permanently delete all your ToDos.
+					</Text>
+					<View style={styles.confirmationButtonContainer}>
+						<TouchableOpacity
+							onPress={clearToDos}
+							style={styles.confirmationButton}
+						>
+							<Text>Yes</Text>
+						</TouchableOpacity>
+
+						<TouchableOpacity
+							onPress={() => setShowConfirmation(false)}
+							style={styles.confirmationButton}
+						>
+							<Text>No</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			)}
 		</View>
 	);
 };
@@ -267,6 +291,25 @@ const styles = StyleSheet.create({
 	clearAll: {
 		color: "#ff0000",
 		marginTop: 15,
+	},
+
+	confirmationContainer: {
+		position: "absolute",
+		backgroundColor: "#cacaca",
+		textAlign: "center",
+		width: "50%",
+		height: "50%",
+		justifyContent: "center",
+	},
+
+	confirmationButtonContainer: {
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "center",
+	},
+
+	confirmationButton: {
+		margin: 10,
 	},
 });
 
