@@ -138,7 +138,7 @@ const ToDosScreen: React.FC<NavigationProps> = ({ navigation }) => {
 				<View style={styles.confirmationContainer}>
 					<Text style={styles.h1}>Are You Sure?</Text>
 					<Text style={styles.p}>
-						This will permanently delete all your ToDos.
+						This will permanently delete all your current ToDos.
 					</Text>
 					<View style={styles.confirmationButtonContainer}>
 						<TouchableOpacity
