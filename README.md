@@ -4,7 +4,9 @@
 ToDo is a simple app made with [react native](https://reactnative.dev/) and [expo](https://expo.dev/).
 
 # Usage
-since im too poor to publish this app on an app store, you will either have to use the [web version](https://todo.firestreaker2.gq) or [selfhost](https://github.com/FireStreaker2/ToDo#Selfhosting) it
+since im too poor to publish this app on an app store, you will have to [selfhost](https://github.com/FireStreaker2/ToDo#Selfhosting) it
+
+> note that there is currently no demo link, because of hosting issues
 
 # Selfhosting
 If you would like to selfhost this, you may.
@@ -14,6 +16,8 @@ $ cd ToDo
 $ npm i
 $ npm start
 ```
+
+> Make sure you have the ``Expo Go`` app installed on your mobile device if you want to use it on mobile.
 
 # License
 [MIT](https://github.com/FireStreaker2/ToDo/blob/main/LICENSE)
